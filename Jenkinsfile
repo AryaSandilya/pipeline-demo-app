@@ -26,7 +26,13 @@ pipeline {
                 echo '================================================'
                 echo 'Stage: Building the application'
                 echo '================================================'
-                bat 'mvn clean compile'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean compile'
+                    } else {
+                        bat 'mvn clean compile'
+                    }
+                }
             }
         }
         
@@ -35,7 +41,13 @@ pipeline {
                 echo '================================================'
                 echo 'Stage: Running unit tests'
                 echo '================================================'
-                bat 'mvn test'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
+                }
             }
             post {
                 always {
@@ -49,7 +61,13 @@ pipeline {
                 echo '================================================'
                 echo 'Stage: Packaging JAR file'
                 echo '================================================'
-                bat 'mvn package -DskipTests'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn package -DskipTests'
+                    } else {
+                        bat 'mvn package -DskipTests'
+                    }
+                }
             }
         }
         
@@ -58,7 +76,13 @@ pipeline {
                 echo '================================================'
                 echo 'Stage: Verifying build artifacts'
                 echo '================================================'
-                bat 'dir target'
+                script {
+                    if (isUnix()) {
+                        sh 'ls -lh target/'
+                    } else {
+                        bat 'dir target'
+                    }
+                }
             }
         }
         
@@ -67,7 +91,13 @@ pipeline {
                 echo '================================================'
                 echo 'Stage: Running the application'
                 echo '================================================'
-                bat "java -jar target\\%APP_NAME%-%APP_VERSION%.jar"
+                script {
+                    if (isUnix()) {
+                        sh "java -jar target/${APP_NAME}-${APP_VERSION}.jar"
+                    } else {
+                        bat "java -jar target\\%APP_NAME%-%APP_VERSION%.jar"
+                    }
+                }
             }
         }
     }
