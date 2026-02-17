@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     tools {
-        maven 'Maven-3.9'
-        jdk 'JDK-21'
+        maven 'Maven-3.9'       // ← Changed to match Jenkins
+        jdk 'JDK-21'        // ← Changed to match Jenkins
     }
     
     environment {
@@ -57,7 +57,8 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true,
+                          testResults: '**/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -80,7 +81,6 @@ pipeline {
                     echo Listing target directory:
                     dir target
                     echo.
-                    echo Checking JAR file:
                     if exist "target\\pipeline-demo-app-1.0-SNAPSHOT.jar" (
                         echo JAR file found successfully!
                     ) else (
@@ -96,7 +96,7 @@ pipeline {
                 echo '================================================'
                 echo 'Running the application'
                 echo '================================================'
-                bat "java -jar target\\pipeline-demo-app-1.0-SNAPSHOT.jar"
+                bat 'java -jar target\\pipeline-demo-app-1.0-SNAPSHOT.jar'
             }
         }
     }
@@ -107,7 +107,8 @@ pipeline {
             echo 'BUILD SUCCESSFUL!'
             echo 'Project: pipeline-demo-app'
             echo '================================================'
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            archiveArtifacts artifacts: 'target/*.jar',
+                             fingerprint: true
         }
         failure {
             echo '================================================'
