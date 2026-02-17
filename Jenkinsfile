@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     tools {
-        maven 'Maven-3.9'       // ← Changed to match Jenkins
-        jdk 'JDK-21'        // ← Changed to match Jenkins
+        maven 'Maven-3.9'
+        jdk 'JDK-21'
     }
     
     environment {
@@ -91,6 +91,17 @@ pipeline {
             }
         }
         
+        stage('Archive Artifacts') {
+            steps {
+                echo '================================================'
+                echo 'Archiving build artifacts'
+                echo '================================================'
+                archiveArtifacts artifacts: 'target/*.jar',
+                                 fingerprint: true
+                echo 'JAR file archived successfully!'
+            }
+        }
+        
         stage('Run Application') {
             steps {
                 echo '================================================'
@@ -107,8 +118,6 @@ pipeline {
             echo 'BUILD SUCCESSFUL!'
             echo 'Project: pipeline-demo-app'
             echo '================================================'
-            archiveArtifacts artifacts: 'target/*.jar',
-                             fingerprint: true
         }
         failure {
             echo '================================================'
