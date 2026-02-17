@@ -15,43 +15,49 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '================================================'
-                echo 'Stage: Checking out code from GitHub'
+                echo 'Checking out: pipeline-demo-app from GitHub'
                 echo '================================================'
                 checkout scm
+            }
+        }
+        
+        stage('Environment Info') {
+            steps {
+                echo '================================================'
+                echo 'Environment Information'
+                echo '================================================'
+                bat '''
+                    echo Java Version:
+                    java -version
+                    echo.
+                    echo Maven Version:
+                    mvn -version
+                    echo.
+                    echo Git Version:
+                    git --version
+                '''
             }
         }
         
         stage('Build') {
             steps {
                 echo '================================================'
-                echo 'Stage: Building the application'
+                echo 'Building the application'
                 echo '================================================'
-                script {
-                    if (isUnix()) {
-                        sh 'mvn clean compile'
-                    } else {
-                        bat 'mvn clean compile'
-                    }
-                }
+                bat 'mvn clean compile'
             }
         }
         
         stage('Test') {
             steps {
                 echo '================================================'
-                echo 'Stage: Running unit tests'
+                echo 'Running unit tests'
                 echo '================================================'
-                script {
-                    if (isUnix()) {
-                        sh 'mvn test'
-                    } else {
-                        bat 'mvn test'
-                    }
-                }
+                bat 'mvn test'
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -59,45 +65,38 @@ pipeline {
         stage('Package') {
             steps {
                 echo '================================================'
-                echo 'Stage: Packaging JAR file'
+                echo 'Packaging JAR file'
                 echo '================================================'
-                script {
-                    if (isUnix()) {
-                        sh 'mvn package -DskipTests'
-                    } else {
-                        bat 'mvn package -DskipTests'
-                    }
-                }
+                bat 'mvn package -DskipTests'
             }
         }
         
-        stage('Verify') {
+        stage('Verify Artifacts') {
             steps {
                 echo '================================================'
-                echo 'Stage: Verifying build artifacts'
+                echo 'Verifying build artifacts'
                 echo '================================================'
-                script {
-                    if (isUnix()) {
-                        sh 'ls -lh target/'
-                    } else {
-                        bat 'dir target'
-                    }
-                }
+                bat '''
+                    echo Listing target directory:
+                    dir target
+                    echo.
+                    echo Checking JAR file:
+                    if exist "target\\pipeline-demo-app-1.0-SNAPSHOT.jar" (
+                        echo JAR file found successfully!
+                    ) else (
+                        echo ERROR: JAR file not found!
+                        exit /b 1
+                    )
+                '''
             }
         }
         
         stage('Run Application') {
             steps {
                 echo '================================================'
-                echo 'Stage: Running the application'
+                echo 'Running the application'
                 echo '================================================'
-                script {
-                    if (isUnix()) {
-                        sh "java -jar target/${APP_NAME}-${APP_VERSION}.jar"
-                    } else {
-                        bat "java -jar target\\%APP_NAME%-%APP_VERSION%.jar"
-                    }
-                }
+                bat "java -jar target\\pipeline-demo-app-1.0-SNAPSHOT.jar"
             }
         }
     }
@@ -105,20 +104,19 @@ pipeline {
     post {
         success {
             echo '================================================'
-            echo 'Pipeline executed successfully!'
+            echo 'BUILD SUCCESSFUL!'
+            echo 'Project: pipeline-demo-app'
             echo '================================================'
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            echo 'JAR file archived successfully'
         }
         failure {
             echo '================================================'
-            echo 'Pipeline failed! Check logs for details.'
+            echo 'BUILD FAILED!'
+            echo 'Check the console output for errors'
             echo '================================================'
         }
         always {
-            echo '================================================'
-            echo 'Cleaning up workspace'
-            echo '================================================'
+            echo 'Cleaning up workspace...'
             cleanWs()
         }
     }
